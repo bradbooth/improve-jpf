@@ -46,7 +46,9 @@ shell=gov.nasa.jpf.shell.basicshell.BasicShell
 ```
 And running the jpf project as normal.
 
-Sample projects can be found in `src/examples/runnable/` for example, `Racer.jpf`
+A sample project is provided as sample.zip otherwise more
+sample projects can be found in `src/examples/runnable/` for example, `Racer.jpf`
+
 <hr/>
 
 
