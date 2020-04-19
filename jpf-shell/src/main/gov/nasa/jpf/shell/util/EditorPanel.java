@@ -40,7 +40,6 @@ import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
@@ -50,9 +49,9 @@ import javax.swing.SwingWorker;
 import javax.swing.event.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.AbstractDocument.DefaultDocumentEvent;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
-import javax.swing.text.Keymap;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
@@ -137,6 +136,7 @@ public class EditorPanel extends ShellPanel {
 
 	protected JLabel label = new JLabel("File: ", JLabel.RIGHT);
 	protected JTextField textfield = new JTextField();
+	public JLabel errorField = new JLabel();
 
 	protected JEditorPane editor;
 
@@ -170,6 +170,8 @@ public class EditorPanel extends ShellPanel {
 		Box box = Box.createVerticalBox();
 		box.add(createFilePanel());
 		box.add(new JScrollPane(editor));
+//    errorField.setPreferredSize(new Dimension(100, 13));
+		box.add(errorField);
 		setLayout(new GridLayout());
 		add(box);
 	}
@@ -205,6 +207,31 @@ public class EditorPanel extends ShellPanel {
 		return null; // means use DefaultEditorKit
 	}
 
+	/**
+	 * Force the properties document to update when caret position changes
+	 * @param e
+	 */
+	private void onCaretEvent(CaretEvent e) {
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					// Remove the file changed listener temporarily so that a caret
+					// position change doesn't cause the file to be considered "changed"
+					editor.getDocument().removeDocumentListener(modifierListener);
+					// Insert an empty string to force document update
+					editor.getDocument().insertString(e.getDot(), "", null);
+					// Add the file changed listener back
+					editor.getDocument().addDocumentListener(modifierListener);
+				} catch (BadLocationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+			}
+		});
+	}
+
 	protected JEditorPane createEditor() {
 		JEditorPane editor = new JEditorPane();
 
@@ -221,6 +248,13 @@ public class EditorPanel extends ShellPanel {
 		// --- set the popup menu
 		PopupMenu popup = createEditorPopupMenu(editor);
 		editor.setComponentPopupMenu(popup);
+
+		editor.addCaretListener(new CaretListener() {
+			@Override
+			public void caretUpdate(CaretEvent e) {
+				onCaretEvent(e);
+			}
+		});
 
 		return editor;
 	}
@@ -440,7 +474,6 @@ public class EditorPanel extends ShellPanel {
 	protected boolean setDocument(String newContents) {
 		boolean success = false;
 		editor.getDocument().removeDocumentListener(modifierListener);
-
 		try {
 			Document doc = editor.getDocument();
 			doc.remove(0, doc.getLength());
