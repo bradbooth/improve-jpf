@@ -209,7 +209,6 @@ public class EditorPanel extends ShellPanel {
 
 	/**
 	 * Force the properties document to update when caret position changes
-	 * 
 	 * @param e
 	 */
 	private void onCaretEvent(CaretEvent e) {
