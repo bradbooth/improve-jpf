@@ -45,7 +45,7 @@ public class Utilities {
 		Boolean pathExists = dir.exists();
 		return pathExists;
 	}
-	
+
 	/**
 	 * Build an HTML based error message that will span multiple lines for each
 	 * error message.
@@ -88,6 +88,24 @@ public class Utilities {
 			assignIndex = line.indexOf('=');
 		}
 		return assignIndex > -1;
+	}
+	
+	
+	/**
+	 * Attempt to extract the assignment operator from
+	 * a line of text, ie either = or +=
+	 * @param line
+	 * @return the assignment =, or +=. If not assignment return null
+	 */
+	public static String getAssignment(String line) {
+		String assignmentPattern = "\\+?="; // Matches on ${...}
+		Pattern results = Pattern.compile(assignmentPattern);
+		Matcher matches = results.matcher(line);
+		
+		if ( matches.find() ) {
+			return matches.group();
+		}
+		return null;
 	}
 	
 	/**
